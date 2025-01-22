@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    networks:
+      - twotier
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: admin
+    restart: always
+
+  flask_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: flaskapp
+    container_name: flask_app
+    networks:
+      - twotier
+    ports:
+      - "5000:5000"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_DB: mydb
+    depends_on:
+      - mysql
+    restart: always
+
+networks:
+  twotier:
+    name: twotier
+    driver: bridge
+
+volumes:
+  mysql_data:
+    name: mysql_volume
+    driver: local
